@@ -33,18 +33,22 @@ module.exports.createCard = (req, res) => {
 })
 };
 
-module.exports.deleteCard = (req, res) => {
-  const { id } = req.params;
-  Card.findByIdAndDelete( id )
-  .then((id) => {
-    if (!id) {
+module.exports.deleteCard =  (req, res) => {
+  Card.findByIdAndRemove(req.params.cardId)
+  .then((card) => {
+    if (card) {
+      res.send({ data: card })
+    } else {
       res.status(404).send({ message: "Карточка по указанному _id не найдена" })
     }
-    res.send({ data: card })
   })
-  .catch((err) => {
-      res.status(500).send({ message: err.message })
-      console.log(err.name);
+     .catch((err) => {
+       if (err.name === 'CastError') {
+         res.status(400).send({ message: 'Ошибка валидации' });
+       } else {
+         res.status(500).send({ message: "Ошибка по умолчанию" });
+         console.log(err.name);
+       }
       });
 };
 
