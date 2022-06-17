@@ -58,25 +58,32 @@ module.exports.likeCard = (req, res) => {
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
-    .then((res) => {
-      if (!res) {
+    .then((card) => {
+      if (!card) {
         res.status(404).send({ message: "Карточка по указанному _id не найдена" })
       }
       res.send({ message: "Like" })
     })
-  .catch((err) => {
- res.status(500).send({ message: 'Не удалось выполнить запрос' });
-    });
-}
-
+    .catch((err) => {
+      if (res.status === 404) {
+        res.status(404).send({ message: "Карточка по указанному _id не найдена" })
+      }
+      if (res.status === 400) {
+        res.status(400).send({ message: "Карточка не найдена" })
+      }
+      else {
+        res.status(500).send({ message: "Ошибка по умолчанию" });
+      }
+    })
+};
 module.exports.dislikeCard = (req, res) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } },
     { new: true },
   )
-  .then((res) => {
-    if (!res) {
+  .then((card) => {
+    if (!card) {
       throw new Error()
     }
     res.send({ message: "Dislike" })
@@ -84,8 +91,12 @@ module.exports.dislikeCard = (req, res) => {
   .catch((err) => {
     if (res.status === 404) {
       res.status(404).send({ message: "Карточка по указанному _id не найдена" })
-    } else {
- res.status(500).send({ message: err.message });
+    }
+    if (res.status === 400) {
+      res.status(400).send({ message: "Карточка не найдена" })
+    }
+    else {
+ res.status(500).send({ message: "Ошибка по умолчанию" });
 }
     });
 }
