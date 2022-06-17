@@ -23,9 +23,12 @@ module.exports.deleteCard = (req, res) => {
   Card.findByIdAndDelete( id )
     .then((card) => res.send({ Removed: card}))
     .catch((err) => {
-      res.status(500).send({ message: err.message });
-      res.status(404).send({ message: "Карточка по указанному _id не найдена" })
-    });
+      if (res.status === 404) {
+        res.status(404).send({ message: "Карточка по указанному _id не найдена" })
+      } else {
+   res.status(500).send({ message: err.message });
+ }
+      });
 };
 
 module.exports.likeCard = (req, res) => Card.findByIdAndUpdate(
