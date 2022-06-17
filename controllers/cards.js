@@ -36,13 +36,15 @@ module.exports.createCard = (req, res) => {
 module.exports.deleteCard = (req, res) => {
   const { id } = req.params;
   Card.findByIdAndDelete( id )
-    .then((card) => res.send({ Removed: card}))
-    .catch((err) => {
-      if (res.status === 404) {
-        res.status(404).send({ message: "Карточка по указанному _id не найдена" })
-      } else {
-   res.status(500).send({ message: err.message });
- }
+  .then((id) => {
+    if (!id) {
+      res.status(404).send({ message: "Карточка по указанному _id не найдена" })
+    }
+    res.send({ data: card })
+  })
+  .catch((err) => {
+      res.status(500).send({ message: err.message })
+      console.log(err.name);
       });
 };
 
@@ -54,16 +56,12 @@ module.exports.likeCard = (req, res) => {
   )
     .then((res) => {
       if (!res) {
-        throw new Error()
+        res.status(404).send({ message: "Карточка по указанному _id не найдена" })
       }
       res.send({ message: "Like" })
     })
   .catch((err) => {
-    if (res.status === 404) {
-      res.status(404).send({ message: "Карточка по указанному _id не найдена" })
-    } else {
- res.status(500).send({ message: err.message });
-}
+ res.status(500).send({ message: 'Не удалось выполнить запрос' });
     });
 }
 
