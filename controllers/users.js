@@ -1,5 +1,4 @@
 const User = require('../models/user');
-
 module.exports.getUsers = (req, res) => {
   User.find()
     .then((users) => res.send({ data: users }))
@@ -31,11 +30,32 @@ module.exports.createUser = (req, res) => {
 };
 
 module.exports.updateUser = (req, res) => {
+  const id = req.user._id;
   const { name, about } = req.body;
+       User.findByIdAndUpdate(
+      id, { $set: { name, about } },
+      { new: true,runValidators:true })
+      .then((user) => {
+        if (!user) {
+          res.status(404).send({ message: "Пользователь не найден" })
+        }
+        res.send({ data: user })
+      })
+         .catch((err) => {
+            if (err.name === 'ValidationError') {
+           res.status(400).send({ message: "Некорректные данные" })
+            }
+            else {
 
-  User.findOneAndUpdate(
+              res.status(500).send({message: 'Сервер не доступен'})
+            }
+           console.log(err.name)
+   });
+};
 
-    { id:req.user._id}, { $set: { name, about } },
+module.exports.updateAvatar = (req, res) => {
+  const { avatar } = req.body
+  User.findByIdAndUpdate({ id: req.user._id }, { $set: { avatar } },
     { new: true })
     .then((user) => {
       if (!user) {
@@ -43,18 +63,13 @@ module.exports.updateUser = (req, res) => {
       }
       res.send({ data: user })
     })
-    .catch((err) => res.status(400).send({ message: err.message }));
-};
-
-module.exports.updateAvatar = (req, res) => {
-  const {avatar} = req.body
-  User.findOneAndUpdate( { id:req.user._id}, { $set: { avatar } },
-  { new: true })
-  .then((user) => {
-    if (!user) {
-      throw new Error()
-    }
-    res.send({ data: user })
-  })
-    .catch((err) => res.status(400).send({ message: err.message }));
-};
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: "Некорректные данные" })
+      }
+      else {
+        res.status(500).send({ message: 'Сервер не доступен' })
+      }
+      console.log(err.name)
+    })
+}
