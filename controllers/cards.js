@@ -47,16 +47,33 @@ module.exports.deleteCard = (req, res) => {
 };
 
 module.exports.likeCard = (req, res) => {
-  const { _id } = req.user;
   Card.findByIdAndUpdate(
-  _id,
+    req.params.cardId,
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
+  .then(() => res.send({ message:"Like"}))
+  .catch((err) => {
+    if (res.status === 404) {
+      res.status(404).send({ message: "Карточка по указанному _id не найдена" })
+    } else {
+ res.status(500).send({ message: err.message });
+}
+    });
 }
 
-module.exports.dislikeCard = (req, res) => Card.findByIdAndUpdate(
-  req.params.cardId,
-  { $pull: { likes: req.user._id } },
-  { new: true },
-)
+module.exports.dislikeCard = (req, res) => {
+  Card.findByIdAndUpdate(
+    req.params.cardId,
+    { $pull: { likes: req.user._id } },
+    { new: true },
+  )
+  .then(() => res.send({ message:"Dislike"}))
+  .catch((err) => {
+    if (res.status === 404) {
+      res.status(404).send({ message: "Карточка по указанному _id не найдена" })
+    } else {
+ res.status(500).send({ message: err.message });
+}
+    });
+}
