@@ -65,10 +65,10 @@ module.exports.likeCard = (req, res) => {
       res.send({ message: "Like" })
     })
     .catch((err) => {
-      if (res.status === 404) {
+      if (err.name === 'Error') {
         res.status(404).send({ message: "Карточка по указанному _id не найдена" })
       }
-      if (res.status === 400) {
+      if (err.name === 'CastError') {
         res.status(400).send({ message: "Карточка не найдена" })
       }
       else {
@@ -89,14 +89,14 @@ module.exports.dislikeCard = (req, res) => {
     res.send({ message: "Dislike" })
   })
   .catch((err) => {
-    if (res.status === 404) {
+    if (err.name === 'Error') {
       res.status(404).send({ message: "Карточка по указанному _id не найдена" })
     }
-    if (res.status === 400) {
+    if (err.name === 'CastError') {
       res.status(400).send({ message: "Карточка не найдена" })
     }
     else {
- res.status(500).send({ message: "Ошибка по умолчанию" });
-}
+      res.status(500).send({ message: "Ошибка по умолчанию" });
+    }
     });
 }
