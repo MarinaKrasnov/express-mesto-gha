@@ -13,9 +13,20 @@ module.exports.getCards = (req, res) => {
 };
 
 module.exports.createCard = (req, res) => {
-  Card.create({  owner:req.user._id, ...req.body})
-    .then((card) => res.send({ data: card }))
-    .catch((err) => res.status(400).send({ message: "Запрашиваемая карточка не найдена" }));
+  const { name, link } = req.body;
+  const owner = req.user._id;
+  console.log(owner, name, link);
+  Card.create({ owner, name, link })
+    .then((card) => {
+      if (!card) {
+        res.status(400).send({ message: "Не удалось создать карточку" });
+      }
+      res.send({ data: card })
+    })
+    .catch((err) => {
+      res.status(500).send({ message: "Запрашиваемая карточка не найдена" });
+  console.log(err.name);
+})
 };
 
 module.exports.deleteCard = (req, res) => {

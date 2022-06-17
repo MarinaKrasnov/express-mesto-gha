@@ -1,26 +1,25 @@
 const User = require('../models/user');
 module.exports.getUsers = (req, res) => {
   User.find()
-    .then((users) => res.send({ data: users }))
-    .catch((err) => res.status(500).send({ message: err.message }));
+  .then((users) => res.send({ data: users }))
+  .catch((err) => res.status(500).send({ message: err.message }));
 };
 
 module.exports.getUser = (req, res) => {
   const { userId } = req.params;
   User.findById(userId)
-    .then((user) => {
-      if (!user) {
-        throw new Error()
+  .then((user) => {
+    if (!user) {
+        res.status(404).send({ message: "Пользователь не найден" })
       }
       res.send({ data: user })
     })
     .catch((err) => {
       if (err.name==='CastError') {
-        res.send({ message: `Пользователь по указанному ID: ${userId} не найден` });
+        res.status(400).send({ message: `Пользователь по указанному ID: ${userId} не найден` });
       } else {
         res.status(500).send({ message: 'Пользователь не найден' })
       };
-      console.log(err.name);
 })
 };
 
