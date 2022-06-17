@@ -19,12 +19,16 @@ module.exports.createCard = (req, res) => {
   Card.create({ owner, name, link })
     .then((card) => {
       if (!card) {
-        res.status(400).send({ message: "Не удалось создать карточку" });
+        throw new Error()
       }
       res.send({ data: card })
     })
     .catch((err) => {
-      res.status(500).send({ message: "Запрашиваемая карточка не найдена" });
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: "Некорректные данные" });
+      } else {
+        res.status(500).send({ message: "Сервер не доступен" });
+      }
   console.log(err.name);
 })
 };
