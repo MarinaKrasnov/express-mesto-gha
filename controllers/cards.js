@@ -52,7 +52,12 @@ module.exports.likeCard = (req, res) => {
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
-  .then(() => res.send({ message:"Like"}))
+    .then((res) => {
+      if (!res) {
+        throw new Error()
+      }
+      res.send({ message: "Like" })
+    })
   .catch((err) => {
     if (res.status === 404) {
       res.status(404).send({ message: "Карточка по указанному _id не найдена" })
@@ -68,7 +73,12 @@ module.exports.dislikeCard = (req, res) => {
     { $pull: { likes: req.user._id } },
     { new: true },
   )
-  .then(() => res.send({ message:"Dislike"}))
+  .then((res) => {
+    if (!res) {
+      throw new Error()
+    }
+    res.send({ message: "Dislike" })
+  })
   .catch((err) => {
     if (res.status === 404) {
       res.status(404).send({ message: "Карточка по указанному _id не найдена" })
