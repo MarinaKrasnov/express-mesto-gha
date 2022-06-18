@@ -61,8 +61,9 @@ module.exports.likeCard = (req, res) => {
     .then((card) => {
       if (!card) {
         res.status(404).send({ message: "Карточка по указанному _id не найдена" })
+      } else {
+        res.send({ message: "Like" })
       }
-      res.send({ message: "Like" })
     })
     .catch((err) => {
       if (err.name === 'Error') {

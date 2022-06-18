@@ -27,7 +27,14 @@ module.exports.createUser = (req, res) => {
   const { name, about, avatar } = req.body;
   User.create(({ name, about, avatar }))
   .then((user) => res.send({ data: user }))
-  .catch((err) => res.status(400).send({ message: err.message }));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: "Некорректные данные"})
+      } else {
+        res.status(500).send({ message: 'Ошибка по умолчанию' })
+
+      }
+    });
 };
 
 module.exports.updateUser = (req, res) => {
@@ -61,8 +68,9 @@ module.exports.updateUser = (req, res) => {
         .then((user) => {
           if (!user) {
         res.status(400).send({ message: "Пользователь не найден" })
-      }
-      res.send({ data: user })
+          } else {
+            res.send({ data: user })
+          }
     })
     .catch((err) => {
       if (err.name === 'CastError') {

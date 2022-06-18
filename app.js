@@ -1,26 +1,26 @@
-const mongoose = require('mongoose')
-const express = require('express')
-const path = require('path')
-const bodyParser = require('body-parser')
-const { PORT = 3000 } = process.env
-const app = express()
+const mongoose = require('mongoose');
+const express = require('express');
+const bodyParser = require('body-parser');
 
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({ extended: true }))
+const { PORT = 3000 } = process.env;
+const app = express();
 
-mongoose.connect('mongodb://localhost:27017/mestodb')
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use((req, res, next) => {
+mongoose.connect('mongodb://localhost:27017/mestodb');
+
+app.use((req, _res, next) => {
   req.user = {
-    _id: '62a98d99a69d976f26139c0e'
+    _id: '62a98d99a69d976f26139c0e',
   };
   next();
-})
-app.use('/users', require('./routes/users'))
-app.use('/cards', require('./routes/cards'))
+});
+app.use('/users', require('./routes/users'));
+app.use('/cards', require('./routes/cards'));
 
 /* app.use(express.static(path.join(__dirname, 'build'))) */
 app.use('*', (_req, res) => {
-  res.status(404).send({ message: "Not found" })
-})
-app.listen(PORT)
+  res.status(404).send({ message: 'Not found' });
+});
+app.listen(PORT);
