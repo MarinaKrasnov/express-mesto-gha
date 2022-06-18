@@ -1,15 +1,15 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
 
 const cardSchema = new mongoose.Schema({
   name: {
     type: String,
-    minlength: [2,'Поле должно содержать не меньше двух символов'],
-    maxlength: [30,'Поле должно содержать не меньше 30 символов'],
-    required: [true, 'Поле должно быть заполнено']
+    minlength: [2, 'Поле должно содержать не меньше двух символов'],
+    maxlength: [30, 'Поле должно содержать не меньше 30 символов'],
+    required: [true, 'Поле должно быть заполнено'],
   },
   link: {
     type: String,
-    required: [true, 'Поле должно быть заполнено']
+    required: [true, 'Поле должно быть заполнено'],
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
@@ -19,12 +19,12 @@ const cardSchema = new mongoose.Schema({
   likes: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'user',
-    default: []
+    default: [],
   }],
   createdAt: {
     type: Date,
-    default: Date.now
-  }
-})
+    default: Date.now,
+  },
+});
 
-module.exports = mongoose.model('card', cardSchema)
+module.exports = mongoose.model('card', cardSchema);
