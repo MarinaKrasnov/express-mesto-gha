@@ -1,4 +1,8 @@
+const bcrypt = require('bcryptjs'); // импортируем bcrypt
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+
+const { NODE_ENV, JWT_SECRET } = process.env;
 
 module.exports.getUsers = (req, res) => {
   User.find()
@@ -26,16 +30,34 @@ module.exports.getUser = (req, res) => {
 };
 
 module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
-  User.create(({ name, about, avatar }))
-    .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Некорректные данные' });
-      } else {
-        res.status(500).send({ message: 'Ошибка по умолчанию' });
+  const {
+    email, password, avatar, about, name
+  } = req.body;
+  User.findOne({ email })
+    .then((user) => {
+      if (user) {
+        return res.status(409).send({ message: 'Такой пользователь уже существует' })
       }
-    });
+      bcrypt.hash(password, 10)
+        .then((hash) => {
+          User.create({
+            name,
+            about,
+            avatar,
+            email,
+            password: hash
+          })
+            .then((data) => res.status(201).send({ data: data }))
+            .catch((err) => {
+              if (err.name === 'ValidationError') {
+                res.status(400).send({ message: 'Некорректные данные' });
+              } else {
+                res.status(500).send({ message: 'Ошибка по умолчанию' });
+              }
+            })
+        })
+    })
+    /* .catch((err)=> res.status(500).send({err: err})) */
 };
 
 module.exports.updateUser = (req, res) => {
@@ -85,3 +107,30 @@ module.exports.updateAvatar = (req, res) => {
       }
     });
 };
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(401).send({ message: 'Email или пароль не могут быть пустыми' });
+  }
+  return User.findOne({ email }).select('+password')
+    .then((user) => {
+      if (!user) {
+        return res.status(404).send({ message: 'Пользователь не найден' })
+      }
+      return bcrypt.compare(password, user.password, ((error, isValid) => {
+        console.log('isValid', isValid)
+        console.log('error', error)
+        if (isValid) {
+          const token = jwt.sign({ id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret', { expiresIn: '7d' });
+          console.log('token', token);
+          return res.cookie('jwt', token, { httpOnly: true, sameSite: true }).status(200).send({ data: user })
+        }
+        if (!isValid) {
+          return Promise.reject(new Error('Неправильные почта или пароль'));
+        }
+        if (error) {
+          return res.status(403).send({ error })
+        }
+      }))
+    })/* .catch((err)=> res.status(500).send({err: err.message})) */
+}
