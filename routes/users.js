@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { celebrate, Joi } = require('celebrate');
+const { celebrate, Joi,errors } = require('celebrate');
 const {
   getUsers, getUser, createUser, updateUser, updateAvatar, login
 } = require('../controllers/users');
@@ -55,5 +55,5 @@ router.patch(
   auth,
   updateAvatar
 );
-
+router.use(errors());
 module.exports = router;

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const express = require('express');
 const bodyParser = require('body-parser');
-const { errors } = require('celebrate');
+const { errors, isCelebrateError } = require('celebrate');
 const cookieParser = require('cookie-parser');
 
 const { PORT = 3000 } = process.env;
@@ -22,7 +22,11 @@ app.use('*', (_req, res) => {
   res.status(404).send({ message: 'Not found' });
 });
 app.use((err, req, res, next) => {
-  res.status(err.status).send({ message: err });
+  if (isCelebrateError(err)) {
+/*     err.statusCode = 400; */
+    throw new Error('Ошибка валидации')
+  }
+  res.status(err.statusCode).send({ message: err.message });
   next(err);
 });
 app.listen(PORT);
