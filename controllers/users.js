@@ -38,7 +38,7 @@ module.exports.createUser = (req, res) => {
       if (user) {
         return res.status(409).send({ message: 'Такой пользователь уже существует' })
       }
-      bcrypt.hash(password, 10)
+      return bcrypt.hash(password, 10)
         .then((hash) => {
           User.create({
             name,
@@ -47,7 +47,7 @@ module.exports.createUser = (req, res) => {
             email,
             password: hash
           })
-            .then((data) => res.status(201).send({ data: data }))
+            .then((data) => res.status(201).send({ data }))
             .catch((err) => {
               if (err.name === 'ValidationError') {
                 res.status(400).send({ message: 'Некорректные данные' });
@@ -118,19 +118,12 @@ module.exports.login = (req, res) => {
         return res.status(404).send({ message: 'Пользователь не найден' })
       }
       return bcrypt.compare(password, user.password, ((error, isValid) => {
-        console.log('isValid', isValid)
-        console.log('error', error)
         if (isValid) {
           const token = jwt.sign({ id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret', { expiresIn: '7d' });
-          console.log('token', token);
           return res.cookie('jwt', token, { httpOnly: true, sameSite: true }).status(200).send({ data: user })
         }
-        if (!isValid) {
-          return Promise.reject(new Error('Неправильные почта или пароль'));
-        }
-        if (error) {
-          return res.status(403).send({ error })
-        }
+
+        return Promise.reject(new Error('Неправильные почта или пароль'));
       }))
     })/* .catch((err)=> res.status(500).send({err: err.message})) */
 }

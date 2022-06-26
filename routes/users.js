@@ -5,13 +5,16 @@ const {
 } = require('../controllers/users');
 const auth = require('../middlewares/auth');
 
-router.post('/me',
-celebrate({
-  body: Joi.object().keys({
-    email: Joi.string().required().email(),
-    password: Joi.string().required().min(8),
-  }).unknown(true),
-}), login);
+router.post(
+  '/me',
+  celebrate({
+    body: Joi.object().keys({
+      email: Joi.string().required().email(),
+      password: Joi.string().required().min(8),
+    }).unknown(true),
+  }),
+  login
+);
 router.post(
   '/',
   celebrate({
@@ -28,7 +31,8 @@ router.post(
 
 router.get('/', auth, getUsers);
 router.get('/:userId', auth, getUser);
-router.patch('/me',
+router.patch(
+  '/me',
   celebrate({
     body: Joi.object().keys({
       email: Joi.string().required().email(),
@@ -38,12 +42,18 @@ router.patch('/me',
       about: Joi.string().min(2).max(30),
     }).unknown(true),
   }),
-  auth, updateUser);
-router.patch('/me/avatar',
+  auth,
+  updateUser
+);
+router.patch(
+  '/me/avatar',
   celebrate({
     body: Joi.object().keys({
       avatar: Joi.string().uri().required(),
     }).unknown(true),
-  }),  auth, updateAvatar);
+  }),
+  auth,
+  updateAvatar
+);
 
 module.exports = router;

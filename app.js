@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 const express = require('express');
 const bodyParser = require('body-parser');
 const { errors } = require('celebrate');
-const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 
 const { PORT = 3000 } = process.env;
@@ -23,7 +22,7 @@ app.use('*', (_req, res) => {
   res.status(404).send({ message: 'Not found' });
 });
 app.use((err, req, res, next) => {
-  res.status(err.status).send({ message: err});
+  res.status(err.status).send({ message: err });
   next(err);
 });
 app.listen(PORT);
