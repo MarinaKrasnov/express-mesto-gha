@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { celebrate, Joi,errors } = require('celebrate');
+const { celebrate, Joi, errors } = require('celebrate');
 const {
   getUsers, getUser, createUser, updateUser, updateAvatar, login
 } = require('../controllers/users');
@@ -34,6 +34,10 @@ router.get('/:userId', auth, getUser);
 router.patch(
   '/me',
   celebrate({
+    params: Joi.object().keys({
+      userId: Joi.string(),min(24),max(24),
+    })
+  }, {
     body: Joi.object().keys({
       email: Joi.string().required().email(),
       password: Joi.string().required().min(8),

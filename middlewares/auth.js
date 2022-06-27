@@ -5,16 +5,18 @@ const { NODE_ENV } = process.env;
 const auth = (req, res, next) => {
   const { cookies } = req;
   if (!cookies) {
-    next(res.status(403).send({ error: 'Сбой в авторизации' }))
+    next(res.status(403).send({ message: 'Сбой в авторизации' }))
   } else {
     const token = cookies.jwt;
     let payload;
     try {
       payload = jwt.verify(token, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret');
     } catch (err) {
-      next(res.status(401).send({ error: 'jwt is not valid' }))
+      next(res.status(401).send({ message: 'jwt is not valid' }))
     }
-    req.user = payload;
+    if (payload) {
+      req.user = payload;
+    }
   }
   next()
 }
