@@ -35,7 +35,7 @@ router.patch(
   '/me',
   celebrate({
     params: Joi.object().keys({
-      userId: Joi.string(),min(24),max(24),
+      userId: Joi.string().alphanum().length(24)
     })
   }, {
     body: Joi.object().keys({
