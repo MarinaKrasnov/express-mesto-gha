@@ -115,14 +115,14 @@ module.exports.login = (req, res) => {
   return User.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        return res.status(404).send({ message: 'Пользователь не найден' })
+       /*  return res.status(404).send({ message: 'Пользователь не найден' }) */
+        return Promise.reject(new Error('Пользователь не найден'));
       }
       return bcrypt.compare(password, user.password, ((error, isValid) => {
         if (isValid) {
           const token = jwt.sign({ id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret', { expiresIn: '7d' });
           return res.cookie('jwt', token, { httpOnly: true, sameSite: true }).status(200).send({ data: user })
         }
-
         return Promise.reject(new Error('Неправильные почта или пароль'));
       }))
     })/* .catch((err)=> res.status(500).send({err: err.message})) */
