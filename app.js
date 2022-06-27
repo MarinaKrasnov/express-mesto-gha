@@ -24,8 +24,11 @@ app.use('*', (_req, res) => {
 });
 app.use((err, req, res, next) => {
   if (isCelebrateError(err)) {
-    /*     err.statusCode = 400; */
+    err.statusCode = 400;
     throw new Error('Ошибка валидации')
+  }
+  if (err.statusCode === undefined) {
+  return res.status(500).send({ message: err.message });
   }
   res.status(err.statusCode).send({ message: err.message });
   next(err);

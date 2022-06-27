@@ -22,7 +22,7 @@ router.post(
       email: Joi.string().required().email(),
       password: Joi.string().required().min(8),
       name: Joi.string().required().min(2).max(30),
-      avatar: Joi.string().uri().required()/* .pattern(new RegExp('/^[http,https]\w\-\.\~\:\/\?\#\[\]\@\!\$\&\'\(\)\*\+\,\;\\=/gim')) */,
+      avatar: Joi.string().uri().required()/* .pattern(new RegExp('/[^http+]\w\-\.\~\:\/\?\#\[\]\@\!\$\&\'\(\)\*\+\,\;\\=/', 'gim')) */,
       about: Joi.string().min(2).max(30),
     }).unknown(true),
   }),
