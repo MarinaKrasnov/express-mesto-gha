@@ -28,10 +28,13 @@ module.exports.createCard = (req, res) => {
 module.exports.deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
     .then((card) => {
-      if (card) {
-        res.send({ data: card });
+      if (!card) {
+        return res.status(404).send({ message: 'Карточка по указанному _id не найдена' });
       } else {
-        res.status(404).send({ message: 'Карточка по указанному _id не найдена' });
+        if (req.user.id !== card.owner) {
+          return res.status(403).send({ message: 'У вас нет прав на удаление' });
+        }
+       return res.send({ data: card });
       }
     })
     .catch((err) => {
@@ -41,7 +44,7 @@ module.exports.deleteCard = (req, res) => {
         res.status(500).send({ message: 'Ошибка по умолчанию' });
       }
     });
-};
+  };
 
 module.exports.likeCard = (req, res) => {
   Card.findByIdAndUpdate(
