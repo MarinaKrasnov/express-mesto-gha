@@ -1,8 +1,8 @@
-const bcrypt = require('bcryptjs'); // импортируем bcrypt
+const bcrypt = require('bcryptjs');
+
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-
-const { NODE_ENV, JWT_SECRET } = process.env;
+const { NotFoundError } = require('../errors/not-found-error');
 
 module.exports.getUsers = (req, res) => {
   User.find()
@@ -117,20 +117,20 @@ module.exports.login = (req, res) => {
   if (!email || !password) {
     return res.status(401).send({ message: 'Email или пароль не могут быть пустыми' });
   }
-  return User.findOne({ email }).select('+password')
-    .then((user) => {
-      if (!user) {
-        return res.status(404).send({ message: 'Пользователь не найден' })
-      /*   return Promise.reject(new Error('Пользователь не найден')); */
+  return User.findOne({ email }).select('+password').then((user) => {
+    if (!user) {
+      /*    return res.status(401).send({ message: 'Пользователь не найден' }); */
+      /*   return res.status(404).send({ message: 'Пользователь не найден' }) */
+      return Promise.reject(new NotFoundError('Пользователь не найден'));
+    }
+    return bcrypt.compare(password, user.password, ((error, isValid) => {
+      if (isValid) {
+        const token = jwt.sign({ id: user.id }, process.env.NODE_ENV === 'production' ? process.env.JWT_SECRET : 'dev-secret', { expiresIn: '7d' });
+        return res.cookie('jwt', token, { httpOnly: true, sameSite: true }).status(200).send({
+          name: user.name, about: user.about, avatar: user.avatar, email: user.email
+        });
       }
-      return bcrypt.compare(password, user.password, ((error, isValid) => {
-        if (isValid) {
-          const token = jwt.sign({ id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret', { expiresIn: '7d' });
-          return res.cookie('jwt', token, { httpOnly: true, sameSite: true }).status(200).send({
-            name: user.name, about: user.about, avatar: user.avatar, email: user.email
-          });
-        }
-        return Promise.reject(new Error('Неправильные почта или пароль'));
-      }))
-    })/* .catch((err)=> res.status(500).send({err: err.message})) */
+      return Promise.reject(error('Неправильные почта или пароль'));
+    }))
+  })/* .catch((err)=> res.status(500).send({err: err.message})) */
 }
