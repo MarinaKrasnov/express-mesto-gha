@@ -10,7 +10,6 @@ const { createUser, login } = require('./controllers/users')
 const { PORT = 3000 } = process.env;
 const app = express();
 require('dotenv').config();
-const { BadRequestError } = require('./errors/bad-request-err');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -49,13 +48,13 @@ app.post(
 app.use('*', (_req, res) => {
   res.status(404).send({ message: 'Not found' });
 });
+app.use(errors());
 app.use((err, req, res, next) => {
   if (isCelebrateError(err)) {
     throw new Error('Ошибка валидации')
   }
   next(err)
 });
-app.use(errors());
 app.use((err, req, res, next) => {
   if (!err.statusCode) {
     return res.status(500).send({ message: err.message });
