@@ -47,7 +47,10 @@ module.exports.createUser = (req, res) => {
             email,
             password: hash
           })
-            .then((data) => res.status(201).send({ data }))
+            .then((data) => res.status(201).send({
+              data: [{ name: data.name },
+                { about: data.about }, { avatar: data.avatar }, { email: data.email }]
+            }))
             .catch((err) => {
               if (err.name === 'ValidationError') {
                 res.status(400).send({ message: 'Некорректные данные' });
@@ -115,13 +118,15 @@ module.exports.login = (req, res) => {
   return User.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-       /*  return res.status(404).send({ message: 'Пользователь не найден' }) */
+        /*  return res.status(404).send({ message: 'Пользователь не найден' }) */
         return Promise.reject(new Error('Пользователь не найден'));
       }
       return bcrypt.compare(password, user.password, ((error, isValid) => {
         if (isValid) {
           const token = jwt.sign({ id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret', { expiresIn: '7d' });
-          return res.cookie('jwt', token, { httpOnly: true, sameSite: true }).status(200).send({ data: user })
+          return res.cookie('jwt', token, { httpOnly: true, sameSite: true }).status(200).send({
+            name: user.name, about: user.about, avatar: user.avatar, email: user.email
+          });
         }
         return Promise.reject(new Error('Неправильные почта или пароль'));
       }))

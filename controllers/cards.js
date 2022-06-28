@@ -11,7 +11,6 @@ module.exports.getCards = (req, res) => {
 module.exports.createCard = (req, res) => {
   const { name, link } = req.body;
   const owner = req.user.id;
-  console.log(owner);
   Card.create({ owner, name, link })
     .then((card) => {
       res.send({ data: card });
@@ -30,12 +29,11 @@ module.exports.deleteCard = (req, res) => {
     .then((card) => {
       if (!card) {
         return res.status(404).send({ message: 'Карточка по указанному _id не найдена' });
-      } else {
-        if (req.user.id !== card.owner) {
-          return res.status(403).send({ message: 'У вас нет прав на удаление' });
-        }
-       return res.send({ data: card });
       }
+      if (req.user.id !== card.owner) {
+        return res.status(403).send({ message: 'У вас нет прав на удаление' });
+      }
+      return res.send({ data: card });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
@@ -44,7 +42,7 @@ module.exports.deleteCard = (req, res) => {
         res.status(500).send({ message: 'Ошибка по умолчанию' });
       }
     });
-  };
+};
 
 module.exports.likeCard = (req, res) => {
   Card.findByIdAndUpdate(

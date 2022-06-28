@@ -1,8 +1,11 @@
 const mongoose = require('mongoose');
 const express = require('express');
 const bodyParser = require('body-parser');
-const { errors, isCelebrateError } = require('celebrate');
+const {
+  errors, isCelebrateError, celebrate, Joi
+} = require('celebrate');
 const cookieParser = require('cookie-parser');
+const { createUser, login } = require('./controllers/users')
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -14,10 +17,33 @@ app.use(cookieParser())
 mongoose.connect('mongodb://localhost:27017/mestodb');
 
 app.use('/users', require('./routes/users'));
-app.use('/signup', require('./routes/users'));
-app.use('/signin', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
 
+app.post(
+  '/signup',
+  celebrate({
+    body: Joi.object().keys({
+      email: Joi.string().required().email(),
+      password: Joi.string().required().min(8),
+      name: Joi.string().required().min(2).max(30),
+      avatar: Joi.string().uri().required(), /* .pattern(new RegExp('/\[.*?\]|
+      (?:https?:\/\/|ftp:\/\/|www\.)
+      (?:(?![.,?!;:()]*(?:\s|$))[^\s]){2,}|(\w+)/gim')) */
+      about: Joi.string().min(2).max(30),
+    }).unknown(true),
+  }),
+  createUser
+);
+app.post(
+  '/signin',
+  celebrate({
+    body: Joi.object().keys({
+      email: Joi.string().required().email(),
+      password: Joi.string().required().min(8),
+    }).unknown(true),
+  }),
+  login
+);
 app.use(errors());
 /* app.use(express.static(path.join(__dirname, 'build'))) */
 app.use('*', (_req, res) => {
@@ -25,13 +51,16 @@ app.use('*', (_req, res) => {
 });
 app.use((err, req, res, next) => {
   if (isCelebrateError(err)) {
-    err.statusCode = 400;
+    /* err.statusCode = 400; */
     throw new Error('Ошибка валидации')
   }
-  if (err.statusCode === undefined) {
-  return res.status(500).send({ message: err.message });
+  next(err)
+});
+app.use((err, req, res, next) => {
+  if (!err.statusCode) {
+    return res.status(500).send({ message: err.message });
   }
   res.status(err.statusCode).send({ message: err.message });
-  next(err);
+  return next(err);
 });
 app.listen(PORT);
