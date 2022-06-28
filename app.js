@@ -26,7 +26,7 @@ app.post(
       email: Joi.string().required().email(),
       password: Joi.string().required().min(8),
       name: Joi.string().min(2).max(30),
-      avatar: Joi.string().uri(), /* .pattern(new RegExp('/\[.*?\]|
+      avatar: Joi.string().uri({ scheme: ['http', 'https'] }), /* .pattern(new RegExp('/\[.*?\]|
       (?:https?:\/\/|ftp:\/\/|www\.)
       (?:(?![.,?!;:()]*(?:\s|$))[^\s]){2,}|(\w+)/gim')) */
       about: Joi.string().min(2).max(30),

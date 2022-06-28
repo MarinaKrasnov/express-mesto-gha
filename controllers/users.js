@@ -47,9 +47,11 @@ module.exports.createUser = (req, res) => {
             email,
             password: hash
           })
-            .then((data) => res.status(201).send({
-               name : req.body.name,
-                about: req.body.about ,  avatar:req.body.avatar ,  email: req.body.email
+            .then(() => res.status(201).send({
+              name: req.body.name,
+              about: req.body.about,
+              avatar: req.body.avatar,
+              email: req.body.email
             }))
             .catch((err) => {
               if (err.name === 'ValidationError') {
@@ -118,8 +120,8 @@ module.exports.login = (req, res) => {
   return User.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        /*  return res.status(404).send({ message: 'Пользователь не найден' }) */
-        return Promise.reject(new Error('Пользователь не найден'));
+        return res.status(404).send({ message: 'Пользователь не найден' })
+      /*   return Promise.reject(new Error('Пользователь не найден')); */
       }
       return bcrypt.compare(password, user.password, ((error, isValid) => {
         if (isValid) {
