@@ -27,7 +27,24 @@ module.exports.getUserById = (req, res) => {
       }
     });
 };
-
+module.exports.getUser = (req, res) => {
+  const userId = req.user.id;
+  User.findById(userId)
+    .then((user) => {
+      if (!user) {
+        res.status(404).send({ message: 'Пользователь не найден' });
+      } else {
+        res.send({ data: user });
+      }
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: `Пользователь по указанному ID: ${userId} не найден` });
+      } else {
+        res.status(500).send({ message: 'Пользователь не найден' });
+      }
+    });
+};
 module.exports.createUser = (req, res) => {
   const {
     email, password, avatar, about, name
@@ -119,7 +136,7 @@ module.exports.login = (req, res) => {
   return User.findOne({ email }).select('+password').then((user) => {
     if (!user) {
       /*    return res.status(401).send({ message: 'Пользователь не найден' }); */
-      return res.status(404).send({ message: 'Пользователь не найден' })
+      return res.status(401).send({ message: 'Пользователь не найден' })
       /* return Promise.reject(new NotFoundError('Пользователь не найден')); */
     }
     return bcrypt.compare(password, user.password, ((error, isValid) => {
