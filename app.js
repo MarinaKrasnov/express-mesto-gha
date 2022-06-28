@@ -51,7 +51,7 @@ app.use('*', (_req, res) => {
 });
 app.use((err, req, res, next) => {
   if (isCelebrateError(err)) {
-    throw new BadRequestError('Ошибка валидации')
+    throw new Error('Ошибка валидации')
   }
   next(err)
 });
