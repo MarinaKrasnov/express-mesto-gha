@@ -25,8 +25,8 @@ app.post(
     body: Joi.object().keys({
       email: Joi.string().required().email(),
       password: Joi.string().required().min(8),
-      name: Joi.string().required().min(2).max(30),
-      avatar: Joi.string().uri().required(), /* .pattern(new RegExp('/\[.*?\]|
+      name: Joi.string().min(2).max(30),
+      avatar: Joi.string().uri(), /* .pattern(new RegExp('/\[.*?\]|
       (?:https?:\/\/|ftp:\/\/|www\.)
       (?:(?![.,?!;:()]*(?:\s|$))[^\s]){2,}|(\w+)/gim')) */
       about: Joi.string().min(2).max(30),
