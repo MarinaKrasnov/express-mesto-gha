@@ -1,24 +1,31 @@
 const router = require('express').Router();
 const { celebrate, Joi, errors } = require('celebrate');
 const {
-  getUsers, getUser, updateUser, updateAvatar
+  getUsers, updateUser, updateAvatar, getUserById
 } = require('../controllers/users');
 const auth = require('../middlewares/auth');
 
 router.get('/', auth, getUsers);
-router.get('/:userId', auth, getUser);
-router.patch(
-  '/me',
+
+router.get(
+  '/:userId',
   celebrate({
     params: Joi.object().keys({
       userId: Joi.string().alphanum().length(24)
-    })
-  }, {
+    }).unknown(true)
+  }),
+  auth,
+  getUserById
+);
+
+router.patch(
+  '/me',
+  celebrate({
     body: Joi.object().keys({
-      email: Joi.string().required().email(),
-      password: Joi.string().required().min(8),
-      name: Joi.string().required().min(2).max(30),
-      avatar: Joi.string().uri().required(),
+      email: Joi.string().email(),
+      password: Joi.string().min(8),
+      name: Joi.string().min(2).max(30),
+      avatar: Joi.string().uri({ scheme: ['http', 'https'] }),
       about: Joi.string().min(2).max(30),
     }).unknown(true),
   }),
@@ -29,7 +36,7 @@ router.patch(
   '/me/avatar',
   celebrate({
     body: Joi.object().keys({
-      avatar: Joi.string().uri().required(),
+      avatar: Joi.string().uri().required({ scheme: ['http', 'https'] }),
     }).unknown(true),
   }),
   auth,

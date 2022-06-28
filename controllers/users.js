@@ -2,7 +2,6 @@ const bcrypt = require('bcryptjs');
 
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const NotFoundError = require('../errors/not-found-error');
 
 module.exports.getUsers = (req, res) => {
   User.find()
@@ -10,7 +9,7 @@ module.exports.getUsers = (req, res) => {
     .catch((err) => res.status(500).send({ message: err.message }));
 };
 
-module.exports.getUser = (req, res) => {
+module.exports.getUserById = (req, res) => {
   const { userId } = req.params;
   User.findById(userId)
     .then((user) => {
@@ -66,7 +65,7 @@ module.exports.createUser = (req, res) => {
 };
 
 module.exports.updateUser = (req, res) => {
-  const id = req.user._id;
+  const { id } = req.user;
   const { name, about } = req.body;
   User.findByIdAndUpdate(
     id,
@@ -91,7 +90,7 @@ module.exports.updateUser = (req, res) => {
 
 module.exports.updateAvatar = (req, res) => {
   const { avatar } = req.body;
-  const id = req.user._id;
+  const { id } = req.user;
   User.findByIdAndUpdate(
     id,
     { $set: { avatar } },
@@ -101,7 +100,7 @@ module.exports.updateAvatar = (req, res) => {
       if (!user) {
         res.status(400).send({ message: 'Пользователь не найден' });
       } else {
-        res.send({ data: user });
+        res.status(200).send({ data: user });
       }
     })
     .catch((err) => {
@@ -120,7 +119,7 @@ module.exports.login = (req, res) => {
   return User.findOne({ email }).select('+password').then((user) => {
     if (!user) {
       /*    return res.status(401).send({ message: 'Пользователь не найден' }); */
-        return res.status(404).send({ message: 'Пользователь не найден' })
+      return res.status(404).send({ message: 'Пользователь не найден' })
       /* return Promise.reject(new NotFoundError('Пользователь не найден')); */
     }
     return bcrypt.compare(password, user.password, ((error, isValid) => {
@@ -130,7 +129,8 @@ module.exports.login = (req, res) => {
           name: user.name, about: user.about, avatar: user.avatar, email: user.email, _id: user.id
         });
       }
-      return Promise.reject(error('Неправильные почта или пароль'));
+      return res.status(401).send({ message: 'Неправильные почта или пароль' });
+      /* return Promise.reject(error('Неправильные почта или пароль')); */
     }))
   })/* .catch((err)=> res.status(500).send({err: err.message})) */
 }

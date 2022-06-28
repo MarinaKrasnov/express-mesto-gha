@@ -33,7 +33,7 @@ module.exports.deleteCard = (req, res) => {
       if (req.user.id !== card.owner) {
         return res.status(403).send({ message: 'У вас нет прав на удаление' });
       }
-      return res.send({ data: card });
+      return res.status(200).send({ data: card });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
