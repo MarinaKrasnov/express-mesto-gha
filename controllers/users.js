@@ -102,7 +102,7 @@ module.exports.updateAvatar = (req, res, next) => {
   )
     .then((user) => {
       if (!user) {
-        next(new CastError('Пользователь не найден'))
+        next(new NotFoundError('Пользователь не найден'))
       } else {
         res.status(200).send({ data: user });
       }
@@ -118,15 +118,16 @@ module.exports.login = (req, res, next) => {
     if (!user) {
       next(new UnauthorizedError('Пользователь не найден'))
     }
-    return bcrypt.compare(password, user.password, ((error, isValid) => {
-      if (isValid) {
+    return bcrypt.compare(password, user.password)
+      .then((matched) => {
+        if (!matched) {
+          next(new UnauthorizedError('Неправильные почта или пароль'))
+        }
         const token = jwt.sign({ id: user.id }, process.env.NODE_ENV === 'production' ? process.env.JWT_SECRET : 'dev-secret', { expiresIn: '7d' });
         return res.cookie('jwt', token, { httpOnly: true, sameSite: true }).status(200).send({
           name: user.name, about: user.about, avatar: user.avatar, email: user.email, _id: user.id
         });
-      } if (error) {
-        next(new UnauthorizedError('Неправильные почта или пароль'))
-      }
-    }))
-  }).catch(next)
+      })
+      .catch(next)
+  })
 }

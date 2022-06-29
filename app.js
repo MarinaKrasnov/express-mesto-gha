@@ -28,7 +28,7 @@ app.post(
       email: Joi.string().required().email(),
       password: Joi.string().required(),
       name: Joi.string().min(2).max(30),
-      avatar: Joi.string().uri({ scheme: ['http', 'https'] }),
+      avatar: Joi.string().uri({ scheme: ['http', 'https'] }).pattern(/^https?:\/\/(www\.)?[a-zA-Z\d-]+\.[\w\d\-.~:/?#[\]@!$&'()*+,;=]{2,}#?$/),
       about: Joi.string().min(2).max(30),
     }),
   }),
@@ -51,7 +51,7 @@ app.use('*', auth, (req, res) => {
 app.use(errors());
 app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;
-  res
+  return res
     .status(statusCode)
     .send({
       message: statusCode === 500
