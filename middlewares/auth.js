@@ -1,10 +1,12 @@
 const jwt = require('jsonwebtoken');
+const ForbidError = require('../errors/forbid-err');
 const UnauthorizedError = require('../errors/unauth');
 
 const auth = (req, res, next) => {
   const { cookies } = req;
   if (!cookies) {
-    next(res.status(403).send({ message: 'Сбой в авторизации' }))
+    /*  next(res.status(403).send({ message: 'Сбой в авторизации' })) */
+    next(new ForbidError('Сбой в авторизации'));
   } else {
     const token = cookies.jwt;
     let payload;

@@ -8,7 +8,6 @@ module.exports.getCards = (req, res, next) => {
       res.send({ data: cards });
     })
     .catch(next)
-    /* .catch((err) => res.status(500).send({ message: err.message })); */
 };
 
 module.exports.createCard = (req, res, next) => {
@@ -18,13 +17,6 @@ module.exports.createCard = (req, res, next) => {
     .then((card) => {
       res.send({ data: card });
     }).catch(next)
-/*     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Некорректные данные' });
-      } else {
-        res.status(500).send({ message: 'Сервер не доступен' });
-      }
-    }); */
 };
 
 module.exports.deleteCard = (req, res, next) => {
@@ -36,7 +28,7 @@ module.exports.deleteCard = (req, res, next) => {
         next(new ForbidError('У вас нет прав на удаление'))
       } else {
         Card.findByIdAndRemove(req.params.cardId)
-          .then((card) => res.status(200).send({ data: card })).catch(next)
+          .then((user) => res.status(200).send({ data: user })).catch(next)
       }
     }).catch(next)
 };

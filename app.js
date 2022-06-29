@@ -45,7 +45,7 @@ app.post(
   login
 );
 /* app.use(express.static(path.join(__dirname, 'build'))) */
-app.use('*', auth, (_req, res) => {
+app.use('*', auth, (req, res) => {
   throw new NotFoundError('Not found');
 });
 app.use(errors());

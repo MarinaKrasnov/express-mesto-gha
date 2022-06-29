@@ -13,7 +13,7 @@ module.exports.getUsers = (req, res, next) => {
     .catch(next)
 };
 
-module.exports.getUserById = (req, res,next) => {
+module.exports.getUserById = (req, res, next) => {
   const { userId } = req.params;
   User.findById(userId)
     .then((user) => {
@@ -24,32 +24,18 @@ module.exports.getUserById = (req, res,next) => {
       }
     })
     .catch(next)
-/*     .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(400).send({ message: `Пользователь по указанному ID: ${userId} не найден` });
-      } else {
-        res.status(500).send({ message: 'Пользователь не найден' });
-      }
-    }); */
 };
-module.exports.getUser = (req, res,next) => {
+module.exports.getUser = (req, res, next) => {
   const userId = req.user.id;
   User.findById(userId)
     .then((user) => {
       if (!user) {
-next(new NotFoundError('Пользователь не найден'))
+        next(new NotFoundError('Пользователь не найден'))
       } else {
         res.status(200).send({ data: user });
       }
     })
     .catch(next)
-/*     .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(400).send({ message: `Пользователь по указанному ID: ${userId} не найден` });
-      } else {
-        res.status(500).send({ message: 'Пользователь не найден' });
-      }
-    }); */
 };
 module.exports.createUser = (req, res, next) => {
   const {
@@ -59,7 +45,6 @@ module.exports.createUser = (req, res, next) => {
     .then((user) => {
       if (user) {
         throw new ConflictError('Такой пользователь уже существует');
-        /*   return res.status(409).send({ message: 'Такой пользователь уже существует' }) */
       } else {
         return bcrypt.hash(password, 10)
       }
@@ -84,13 +69,12 @@ module.exports.createUser = (req, res, next) => {
             /*    res.status(400).send({ message: 'Некорректные данные' }); */
           } else {
             next(err)
-            /*  res.status(500).send({ message: 'Ошибка по умолчанию' }); */
           }
         })
     }).catch(next)
 };
 
-module.exports.updateUser = (req, res,next) => {
+module.exports.updateUser = (req, res, next) => {
   const { id } = req.user;
   const { name, about } = req.body;
   User.findByIdAndUpdate(
@@ -106,16 +90,9 @@ module.exports.updateUser = (req, res,next) => {
       }
     })
     .catch(next)
-/*     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Некорректные данные' });
-      } else {
-        res.status(500).send({ message: 'Сервер не доступен' });
-      }
-    }); */
 };
 
-module.exports.updateAvatar = (req, res,next) => {
+module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   const { id } = req.user;
   User.findByIdAndUpdate(
@@ -130,15 +107,7 @@ module.exports.updateAvatar = (req, res,next) => {
         res.status(200).send({ data: user });
       }
     })
-  .catch(next)
-/*     .catch((err) => {
-      if (err.name === 'CastError') {
-
-        res.status(400).send({ message: 'Некорректные данные' });
-      } else {
-        res.status(500).send({ message: 'Сервер не доступен' });
-      }
-    }); */
+    .catch(next)
 };
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
@@ -155,8 +124,9 @@ module.exports.login = (req, res, next) => {
         return res.cookie('jwt', token, { httpOnly: true, sameSite: true }).status(200).send({
           name: user.name, about: user.about, avatar: user.avatar, email: user.email, _id: user.id
         });
+      } if (error) {
+        next(new UnauthorizedError('Неправильные почта или пароль'))
       }
-      next(new UnauthorizedError('Неправильные почта или пароль'))
     }))
   }).catch(next)
 }
