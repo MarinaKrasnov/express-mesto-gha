@@ -8,45 +8,45 @@ const auth = require('../middlewares/auth');
 router.get('/', auth, getCards);
 router.post(
   '/',
+  auth,
   celebrate({
     body: Joi.object().keys({
       name: Joi.string().required().min(2).max(30),
-      link: Joi.string().uri({ scheme: ['http', 'https'] }).required()/* .pattern(new RegExp('^(?:http(s)?:\\/\\/)?[\\w.-]+(?:\\.[\\w.-]+)+[\\w\\-._~:/?#[\\]@!$&\'()*+,;=.]+$')) */,
-    }).unknown(true),
+      link: Joi.string().uri().required(),
+    }),
   }),
-  auth,
   createCard
 );
 router.delete(
   '/:cardId',
+  auth,
   celebrate({
     params: Joi.object().keys({
-      cardId: Joi.string().alphanum().length(24)
+      cardId: Joi.string().length(24).hex()
     }),
   }),
-  auth,
   deleteCard
 );
 
 router.put(
   '/:cardId/likes',
+  auth,
   celebrate({
     params: Joi.object().keys({
-      cardId: Joi.string().alphanum().length(24)
+      cardId: Joi.string().length(24).hex()
     })
   }),
-  auth,
   likeCard
 );
 
 router.delete(
   '/:cardId/likes',
+  auth,
   celebrate({
     params: Joi.object().keys({
-      cardId: Joi.string().alphanum().length(24)
+      cardId: Joi.string().length(24).hex()
     })
   }),
-  auth,
   dislikeCard
 );
 

@@ -1,6 +1,5 @@
 const jwt = require('jsonwebtoken');
-
-const { NODE_ENV, JWT_SECRET } = process.env;
+const UnauthorizedError = require('../errors/unauth');
 
 const auth = (req, res, next) => {
   const { cookies } = req;
@@ -10,9 +9,10 @@ const auth = (req, res, next) => {
     const token = cookies.jwt;
     let payload;
     try {
-      payload = jwt.verify(token, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret');
+      payload = jwt.verify(token, process.env.NODE_ENV === 'production' ? process.env.JWT_SECRET : 'dev-secret');
     } catch (err) {
-      next(res.status(401).send({ message: 'jwt is not valid' }))
+      next(new UnauthorizedError('jwt is not valid'));
+      /*    next(res.status(401).send({ message: 'jwt is not valid' })) */
     }
     if (payload) {
       req.user = payload;

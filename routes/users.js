@@ -13,38 +13,34 @@ router.get(
 );
 router.get(
   '/:userId',
+  auth,
   celebrate({
     params: Joi.object().keys({
-      userId: Joi.string().alphanum().length(24)
-    }).unknown(true)
+      userId: Joi.string().length(24).hex()
+    })
   }),
-  auth,
   getUserById
 );
 
 router.patch(
   '/me',
+  auth,
   celebrate({
     body: Joi.object().keys({
-      email: Joi.string().email(),
-      password: Joi.string().min(8),
       name: Joi.string().min(2).max(30),
-      avatar: Joi.string().uri({ scheme: ['http', 'https'] })/* .pattern(new RegExp('/^(?:http(s)?:\\/\\/)?[\\w.-]+(?:\\.[\\w.-]+)+[\\w\\-._~:/?#[\\]@!$&\'()*+,;=.]+$/gm')) */,
       about: Joi.string().min(2).max(30),
-    }).unknown(true),
+    }),
   }),
-  auth,
   updateUser
 );
 router.patch(
   '/me/avatar',
+  auth,
   celebrate({
     body: Joi.object().keys({
-      avatar: Joi.string().uri().required({ scheme: ['http', 'https'] })/* .pattern(new RegExp('/^(?:http(s)?:\\/\\/)?[\\w.-]+(?:\\.[\\w.-]+)+[\\w\\-._~:/?#[\\]@!$&\'()*+,;=.]+$/gm')) */,
-    }).unknown(true),
+      avatar: Joi.string().uri().required(),
+    }),
   }),
-  auth,
   updateAvatar
 );
-router.use(errors());
 module.exports = router;

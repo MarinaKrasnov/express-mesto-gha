@@ -1,91 +1,79 @@
+const ForbidError = require('../errors/forbid-err');
+const NotFoundError = require('../errors/not-found-error');
 const Card = require('../models/card');
 
-module.exports.getCards = (req, res) => {
+module.exports.getCards = (req, res, next) => {
   Card.find()
     .then((cards) => {
       res.send({ data: cards });
     })
-    .catch((err) => res.status(500).send({ message: err.message }));
+    .catch(next)
+    /* .catch((err) => res.status(500).send({ message: err.message })); */
 };
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
   const owner = req.user.id;
   Card.create({ owner, name, link })
     .then((card) => {
       res.send({ data: card });
-    })
-    .catch((err) => {
+    }).catch(next)
+/*     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Некорректные данные' });
       } else {
         res.status(500).send({ message: 'Сервер не доступен' });
       }
-    });
+    }); */
 };
 
-module.exports.deleteCard = (req, res) => {
-  Card.findByIdAndRemove(req.params.cardId)
+module.exports.deleteCard = (req, res, next) => {
+  Card.findById(req.params.cardId)
     .then((card) => {
       if (!card) {
-        return res.status(404).send({ message: 'Карточка по указанному _id не найдена' });
-      }
-      if (req.user.id !== card.owner.toString()) {
-        return res.status(403).send({ message: 'У вас нет прав на удаление' });
-      }
-      return res.status(200).send({ data: card });
-    })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Ошибка валидации' });
+        next(new NotFoundError('Карточка по указанному id не найдена'))
+      } else if (req.user.id !== card.owner.toString()) {
+        next(new ForbidError('У вас нет прав на удаление'))
       } else {
-        res.status(500).send({ message: 'Ошибка по умолчанию' });
+        Card.findByIdAndRemove(req.params.cardId)
+          .then((card) => res.status(200).send({ data: card })).catch(next)
       }
-    });
+    }).catch(next)
 };
 
-module.exports.likeCard = (req, res) => {
-  Card.findByIdAndUpdate(
-    req.params.cardId,
-    { $addToSet: { likes: req.user._id } },
-    { new: true },
-  )
+module.exports.likeCard = (req, res, next) => {
+  Card.findById(req.params.cardId)
     .then((card) => {
       if (!card) {
-        res.status(404).send({ message: 'Карточка по указанному _id не найдена' });
+        next(new NotFoundError('Карточка по указанному id не найдена'))
+      } else if (req.user.id !== card.owner.toString()) {
+        next(new ForbidError('У вас нет прав на удаление'))
       } else {
-        res.send({ message: 'Like' });
+        Card.findByIdAndUpdate(
+          req.params.cardId,
+          { $addToSet: { likes: req.user.id } },
+          { new: true },
+        )
+          .then(() => res.send({ message: 'Like' }))
+          .catch(next)
       }
-    })
-    .catch((err) => {
-      /*      if (err.name === 'Error') {
-        res.status(404).send({ message: 'Карточка по указанному _id не найдена' });
-      } */
-      if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Карточка не найдена' });
-      } else {
-        res.status(500).send({ message: 'Ошибка по умолчанию' });
-      }
-    });
+    }).catch(next)
 };
-module.exports.dislikeCard = (req, res) => {
-  Card.findByIdAndUpdate(
-    req.params.cardId,
-    { $pull: { likes: req.user._id } },
-    { new: true },
-  )
+module.exports.dislikeCard = (req, res, next) => {
+  Card.findById(req.params.cardId)
     .then((card) => {
       if (!card) {
-        res.status(404).send({ message: 'Карточка по указанному _id не найдена' });
+        next(new NotFoundError('Карточка по указанному id не найдена'))
+      } else if (req.user.id !== card.owner.toString()) {
+        next(new ForbidError('У вас нет прав на удаление'))
       } else {
-        res.send({ message: 'Dislike' });
+        Card.findByIdAndUpdate(
+          req.params.cardId,
+          { $pull: { likes: req.user.id } },
+          { new: true },
+        )
+          .then(() => res.send({ message: 'Dislike' }))
+          .catch(next)
       }
-    })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Карточка не найдена' });
-      } else {
-        res.status(500).send({ message: 'Ошибка по умолчанию' });
-      }
-    });
+    }).catch(next)
 };

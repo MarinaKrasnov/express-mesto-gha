@@ -2,10 +2,12 @@ const mongoose = require('mongoose');
 const express = require('express');
 const bodyParser = require('body-parser');
 const {
-  errors, isCelebrateError, celebrate, Joi
+  errors, celebrate, Joi
 } = require('celebrate');
 const cookieParser = require('cookie-parser');
-const { createUser, login } = require('./controllers/users')
+const { createUser, login } = require('./controllers/users');
+const auth = require('./middlewares/auth');
+const NotFoundError = require('./errors/not-found-error');
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -24,13 +26,11 @@ app.post(
   celebrate({
     body: Joi.object().keys({
       email: Joi.string().required().email(),
-      password: Joi.string().required().min(8),
+      password: Joi.string().required(),
       name: Joi.string().min(2).max(30),
-      avatar: Joi.string().uri({ scheme: ['http', 'https'] }), /* .pattern(new RegExp('/\[.*?\]|
-      (?:https?:\/\/|ftp:\/\/|www\.)
-      (?:(?![.,?!;:()]*(?:\s|$))[^\s]){2,}|(\w+)/gim')) */
+      avatar: Joi.string().uri({ scheme: ['http', 'https'] }),
       about: Joi.string().min(2).max(30),
-    }).unknown(true),
+    }),
   }),
   createUser
 );
@@ -39,28 +39,24 @@ app.post(
   celebrate({
     body: Joi.object().keys({
       email: Joi.string().required().email(),
-      password: Joi.string().required().min(8),
-    }).unknown(true),
+      password: Joi.string().required(),
+    }),
   }),
   login
 );
 /* app.use(express.static(path.join(__dirname, 'build'))) */
-app.use('*', (_req, res) => {
-  res.status(404).send({ message: 'Not found' });
+app.use('*', auth, (_req, res) => {
+  throw new NotFoundError('Not found');
 });
 app.use(errors());
 app.use((err, req, res, next) => {
-  if (isCelebrateError(err)) {
-    throw new Error('Ошибка валидации')
-  }
-  next(err)
-});
-app.use((err, req, res, next) => {
-  if (!err.statusCode) {
-    return res.status(500).send({ message: err.message });
-  }
-  res.status(err.statusCode).send({ message: err.message });
-
-  return next(err);
+  const { statusCode = 500, message } = err;
+  res
+    .status(statusCode)
+    .send({
+      message: statusCode === 500
+        ? 'На сервере произошла ошибка'
+        : message
+    });
 });
 app.listen(PORT);
