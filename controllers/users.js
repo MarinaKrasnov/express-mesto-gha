@@ -1,7 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const BadRequestError = require('../errors/bad-request-err');
-const CastError = require('../errors/cast-err');
 const ConflictError = require('../errors/conflict-err');
 const NotFoundError = require('../errors/not-found-error');
 const UnauthorizedError = require('../errors/unauth');
