@@ -45,18 +45,19 @@ app.post(
   login
 );
 /* app.use(express.static(path.join(__dirname, 'build'))) */
-app.use('*', auth, (req, res) => {
+app.use('*', auth, () => {
   throw new NotFoundError('Not found');
 });
 app.use(errors());
 app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;
-  return res
+  res
     .status(statusCode)
     .send({
       message: statusCode === 500
         ? 'На сервере произошла ошибка'
         : message
     });
+  next();
 });
 app.listen(PORT);
