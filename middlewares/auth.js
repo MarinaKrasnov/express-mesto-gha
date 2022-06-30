@@ -1,12 +1,10 @@
 const jwt = require('jsonwebtoken');
-const ForbidError = require('../errors/forbid-err');
 const UnauthorizedError = require('../errors/unauth');
 
 const auth = (req, res, next) => {
   const { cookies } = req;
   if (!cookies) {
-    /*  next(res.status(403).send({ message: 'Сбой в авторизации' })) */
-    next(new ForbidError('Сбой в авторизации'));
+    next(new UnauthorizedError('jwt is not valid'));
   } else {
     const token = cookies.jwt;
     let payload;
@@ -14,7 +12,6 @@ const auth = (req, res, next) => {
       payload = jwt.verify(token, process.env.NODE_ENV === 'production' ? process.env.JWT_SECRET : 'dev-secret');
     } catch (err) {
       next(new UnauthorizedError('jwt is not valid'));
-      /*    next(res.status(401).send({ message: 'jwt is not valid' })) */
     }
     if (payload) {
       req.user = payload;

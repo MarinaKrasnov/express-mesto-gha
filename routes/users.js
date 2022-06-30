@@ -4,6 +4,7 @@ const {
   getUsers, updateUser, updateAvatar, getUserById, getUser
 } = require('../controllers/users');
 const auth = require('../middlewares/auth');
+const ValidateUrl = require('../utils/constants');
 
 router.get('/', auth, getUsers);
 router.get(
@@ -38,7 +39,7 @@ router.patch(
   auth,
   celebrate({
     body: Joi.object().keys({
-      avatar: Joi.string().uri().required().pattern(/^https?:\/\/(www\.)?[a-zA-Z\d-]+\.[\w\d\-.~:/?#[\]@!$&'()*+,;=]{2,}#?$/),
+      avatar: Joi.string().uri().required().pattern(ValidateUrl),
     }),
   }),
   updateAvatar

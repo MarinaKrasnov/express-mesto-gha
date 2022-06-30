@@ -8,6 +8,7 @@ const cookieParser = require('cookie-parser');
 const { createUser, login } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 const NotFoundError = require('./errors/not-found-error');
+const ValidateUrl = require('./utils/constants');
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -28,7 +29,7 @@ app.post(
       email: Joi.string().required().email(),
       password: Joi.string().required(),
       name: Joi.string().min(2).max(30),
-      avatar: Joi.string().uri({ scheme: ['http', 'https'] }).pattern(/^https?:\/\/(www\.)?[a-zA-Z\d-]+\.[\w\d\-.~:/?#[\]@!$&'()*+,;=]{2,}#?$/),
+      avatar: Joi.string().uri({ scheme: ['http', 'https'] }).pattern(ValidateUrl),
       about: Joi.string().min(2).max(30),
     }),
   }),

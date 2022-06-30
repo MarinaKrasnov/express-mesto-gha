@@ -110,17 +110,14 @@ module.exports.updateAvatar = (req, res, next) => {
 };
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
-  if (!email || !password) {
-    next(new UnauthorizedError('Email или пароль не могут быть пустыми'))
-  }
   return User.findOne({ email }).select('+password').then((user) => {
     if (!user) {
-      next(new UnauthorizedError('Пользователь не найден'))
+      return next(new UnauthorizedError('Пользователь не найден'))
     }
     return bcrypt.compare(password, user.password)
       .then((matched) => {
         if (!matched) {
-          next(new UnauthorizedError('Неправильные почта или пароль'))
+          return next(new UnauthorizedError('Неправильные почта или пароль'))
         }
         const token = jwt.sign({ id: user.id }, process.env.NODE_ENV === 'production' ? process.env.JWT_SECRET : 'dev-secret', { expiresIn: '7d' });
         return res.cookie('jwt', token, { httpOnly: true, sameSite: true }).status(200).send({
